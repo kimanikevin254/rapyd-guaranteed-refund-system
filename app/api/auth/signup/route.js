@@ -1,6 +1,7 @@
 import sqlite3 from "sqlite3";
 import { open, Database } from "sqlite";
 import bcrypt from "bcrypt"
+import { makeRequest } from "@/utils/makeRequest";
 
 // Initialize the DB as null
 // Connect it to the actual DB instance later
@@ -27,9 +28,10 @@ export async function POST(req, res){
             id INTEGER PRIMARY KEY,
             name TEXT,
             email TEXT UNIQUE,
-            password TEXT
+            password TEXT,
+            rapyd_cust_id TEXT UNIQUE
         )`
-    );
+     );     
 
     // Check if the user with the given email already exists
     const existingUser = await db.get(
@@ -50,33 +52,78 @@ export async function POST(req, res){
         )
     }
 
-    // create the user   
+    // Create a customer in Rapyd
+try {
+    const body = {
+        name: data.fullname,
+        email: data.email,
+        payment_method: {
+            type: "us_debit_visa_card",
+            fields: {
+                number: data.card_number,
+                expiration_month: data.expiration_month,
+                expiration_year: data.expiration_year,
+                name: data.fullname,
+                cvv: data.cvv,
+            },
+        },
+        addresses: [
+            {
+                name: data.fullname,
+                line_1: data.address_line,
+                country: data.country,
+                zip: data.zip_code,
+            },
+        ],
+    };
+    const result = await makeRequest("POST", "/v1/customers", body);
+ 
+    // Create the user
     await db.run(
-        `INSERT INTO users (name, email, password) VALUES (?, ?, ?)`,
+        `INSERT INTO users (name, email, password, rapyd_cust_id) VALUES (?, ?, ?, ?)`,
         [
-        data.fullname,
-        data.email,
-        await hashPassword(data.password), // You need to await the result of the asynchronous hashPassword function
+            data.fullname,
+            data.email,
+            await hashPassword(data.password), // Await the result of the asynchronous hashPassword function
+            result.body.data.id,
         ]
     );
-
+ 
     // Fetch the created user
     const user = await db.get(
-        `SELECT id, name, email FROM users WHERE email = ?`,
+        `SELECT id, name, email, rapyd_cust_id FROM users WHERE email = ?`,
         [data.email]
     );
-
-    // Creating a Rapyd customer functionality will go here
-
-    // return the user data as a json response
-    return new Response(JSON.stringify({
-        user: {
-            id: user.id,
-            name: user.name,
-            email: user.email
+ 
+    // Return the user data as a json response
+    return new Response(
+        JSON.stringify({
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                rapyd_cust_id: user.rapyd_cust_id,
+                card_auth_link:
+                    result.body.data.payment_methods.data[0].redirect_url,
+            },
+        }),
+        {
+            headers: { "Content-Type": "application/json" },
+            status: 200,
         }
-    }), {
-        headers: { 'Content-Type': 'application/json' },
-        status: 200
-    })
+    );
+ } catch (error) {
+    console.error("Error completing request", error);
+ 
+    // Return an error
+    return new Response(
+        JSON.stringify({
+            error: "Unable to create the customer on Rapyd.",
+        }),
+        {
+            headers: { "Content-Type": "application/json" },
+            status: 400,
+        }
+    );
+ } 
 }

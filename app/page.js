@@ -7,6 +7,10 @@ import { useEffect, useState } from "react";
 export default function Home() {
   const [user, setUser] = useState(null);
 
+  // Set the link to perform 3DS auth
+  const [cardAuthLink, setCardAuthLink] = useState(null)
+
+
   const checkUserInfo = () => {
     const userInfo = JSON.parse(localStorage.getItem("user_info"))
 
@@ -20,7 +24,11 @@ export default function Home() {
 
   return (
     <div className='p-4 h-screen w-screen overflow-hidden'>
-      {!user ? <FormSwitcher checkUserInfo={checkUserInfo} /> : <Dashboard checkUserInfo={checkUserInfo} />}
+     {
+       !user ?
+       <FormSwitcher checkUserInfo={checkUserInfo} setCardAuthLink={setCardAuthLink} /> :
+       <Dashboard checkUserInfo={checkUserInfo} cardAuthLink={cardAuthLink} setCardAuthLink={setCardAuthLink} />
+     }
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Login from './Login'
 import Signup from './Signup'
 
-function FormSwitcher({ checkUserInfo }) {
+function FormSwitcher({ checkUserInfo, setCardAuthLink }) {
     const [currentForm, setCurrentForm] = useState('login')
   return (
     <div className='bg-white p-5 rounded shadow max-w-2xl space-y-4 mx-auto'>
@@ -17,7 +17,7 @@ function FormSwitcher({ checkUserInfo }) {
             {
                 currentForm === 'login' ?
                 <Login checkUserInfo={checkUserInfo} /> :
-                <Signup checkUserInfo={checkUserInfo} />
+                <Signup checkUserInfo={checkUserInfo} setCardAuthLink={setCardAuthLink} />
             }
         </div>
     </div>

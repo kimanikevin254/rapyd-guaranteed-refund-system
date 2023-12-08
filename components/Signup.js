@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 
-function Signup({ checkUserInfo }) {
+function Signup({ checkUserInfo, setCardAuthLink }) {
     const [userData, setUserData] = useState({
         fullname: 'John Doe',
         email: 'john@rapyd.net',
@@ -42,6 +42,11 @@ function Signup({ checkUserInfo }) {
 
         // store the returned info in local storage
         if(data.user){
+          // cardAuthLink state update
+          if (data.user.card_auth_link) {
+            setCardAuthLink(data.user.card_auth_link)
+          }
+
           localStorage.setItem('user_info', JSON.stringify(data.user))
           checkUserInfo()
         }

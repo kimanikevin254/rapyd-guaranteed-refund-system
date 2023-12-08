@@ -59,7 +59,8 @@ export async function POST(req, res){
         user: {
             id: existingUser.id,
             name: existingUser.name,
-            email: existingUser.email
+            email: existingUser.email,
+            rapyd_cust_id: existingUser.rapyd_cust_id
         }
     }), {
         headers: { 'Content-Type': 'application/json' },
