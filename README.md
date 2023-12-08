@@ -15,4 +15,4 @@ The [Rapyd](https://www.rapyd.net/) Guaranteed Refund System is a subscription m
 This repository has 2 branches:
 
 1. `starter-template`: Contains the code that you can use as a starter template to follow along with the guide. Has a basic authentication system set up to allow users to log in and sign up.
-2. `full-code`: Contains the full code project.
+2. `full-project-code`: Contains the full code project.
